@@ -26,9 +26,10 @@ def main():
             return
 
         # Send alert to Telegram
+        price = float(listing["price"])
         success = send_alert(
             title=listing["title"],
-            price=listing["price"],
+            price=price,
             image_url=listing["image_url"],
             item_id=listing["id"],
             web_url=listing["web_url"],
