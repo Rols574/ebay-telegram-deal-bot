@@ -42,8 +42,13 @@ def send_alert(
     if not TG_BOT_TOKEN or not CHAT_ID:
         raise ValueError("TG_BOT_TOKEN and CHAT_ID must be set as secrets")
 
-    # Ensure price is a float so we can format it nicely
-    price = float(price)
+    print(f"DEBUG: price before float conversion: {repr(price)}")
+
+    try:
+        price = float(price)
+    except ValueError:
+        print(f"ERROR: Could not convert price to float: {repr(price)}")
+        raise
 
     caption = (
         f"🎯 *eBay Deal Alert*\n\n"
