@@ -10,37 +10,42 @@ TG_BOT_TOKEN = os.getenv("TG_BOT_TOKEN")
 CHAT_ID = os.getenv("CHAT_ID")
 TG_API_URL = f"https://api.telegram.org/bot{TG_BOT_TOKEN}"
 
+
 def deep_link(item_id: str) -> str:
     """
-    Generate eBay deep link for the item.
-
-    Args:
-        item_id: eBay item ID
-
-    Returns:
-        Deep link URL that opens in the eBay app
+    Generate an eBay deep link for the item.
+    Opens directly in the eBay app if installed.
     """
     return f"ebay://com.ebay.mobile/ebay/link/?nav=item.view&id={item_id}"
 
-def send_alert(title: str, price: float, image_url: str, item_id: str, web_url: str) -> bool:
+
+def send_alert(
+    title: str,
+    price,                    # can arrive as str or float
+    image_url: Optional[str],
+    item_id: str,
+    web_url: str,
+) -> bool:
     """
-    Send deal alert to Telegram.
+    Send a deal alert to Telegram.
 
     Args:
-        title: Item title
-        price: Item price
-        image_url: URL of the first image
-        item_id: eBay item ID
-        web_url: Web URL of the listing
+        title:      Listing title
+        price:      Listing price (string or float)
+        image_url:  First picture URL (can be None/empty)
+        item_id:    eBay item ID
+        web_url:    Normal web URL fallback
 
     Returns:
-        True if message was sent successfully, False otherwise
+        True if the message was accepted by Telegram, otherwise False.
     """
-    if not all([TG_BOT_TOKEN, CHAT_ID]):
-        raise ValueError("TG_BOT_TOKEN and CHAT_ID environment variables must be set")
+    if not TG_BOT_TOKEN or not CHAT_ID:
+        raise ValueError("TG_BOT_TOKEN and CHAT_ID must be set as secrets")
 
-    # Format message with deep link and web URL
-    message = (
+    # Ensure price is a float so we can format it nicely
+    price = float(price)
+
+    caption = (
         f"🎯 *eBay Deal Alert*\n\n"
         f"*{title}*\n"
         f"💰 ${price:.2f}\n\n"
@@ -48,31 +53,22 @@ def send_alert(title: str, price: float, image_url: str, item_id: str, web_url: 
         f"[View on Web]({web_url})"
     )
 
-    try:
-        # Try to send photo with caption
-        if image_url:
-            response = requests.post(
-                f"{TG_API_URL}/sendPhoto",
-                json={
-                    "chat_id": CHAT_ID,
-                    "photo": image_url,
-                    "caption": message,
-                    "parse_mode": "Markdown",
-                },
-            )
-        else:
-            # Fallback to text-only message
-            response = requests.post(
-                f"{TG_API_URL}/sendMessage",
-                json={
-                    "chat_id": CHAT_ID,
-                    "text": message,
-                    "parse_mode": "Markdown",
-                },
-            )
+    payload = {
+        "chat_id": CHAT_ID,
+        "parse_mode": "Markdown",
+    }
 
-        response.raise_for_status()
+    try:
+        if image_url:
+            payload.update({"photo": image_url, "caption": caption})
+            url = f"{TG_API_URL}/sendPhoto"
+        else:
+            payload.update({"text": caption})
+            url = f"{TG_API_URL}/sendMessage"
+
+        r = requests.post(url, json=payload, timeout=10)
+        r.raise_for_status()
         return True
 
     except requests.RequestException:
-        return False 
+        return False
