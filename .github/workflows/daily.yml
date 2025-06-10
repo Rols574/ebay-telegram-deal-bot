@@ -1,0 +1,30 @@
+name: Daily eBay Deal Alert
+
+on:
+  schedule:
+    - cron: "0 13 * * *"  # 09:00 ET / 13:00 UTC
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  find-deal:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.12"
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        
+    - name: Run deal finder
+      env:
+        EBAY_APP_ID: ${{ secrets.EBAY_APP_ID }}
+        TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
+        CHAT_ID: ${{ secrets.CHAT_ID }}
+      run: python main.py 

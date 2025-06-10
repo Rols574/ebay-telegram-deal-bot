@@ -1,0 +1,14 @@
+# eBay search configuration
+search_term = "vintage camera"  # Your search term
+max_price = 100.00  # Maximum price in USD
+blocked_words = [
+    "for parts",
+    "defective",
+    "broken",
+    "not working",
+    "as is",
+    "untested"
+]
+
+# Telegram configuration
+chat_id = ""  # Your Telegram chat ID (will be set via environment variable) 
