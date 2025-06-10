@@ -36,6 +36,8 @@ def main():
             web_url=listing["web_url"],
         )
 
+        print(f"send_alert returned: {success}")
+
         if not success:
             print("Failed to send Telegram alert")
             return
