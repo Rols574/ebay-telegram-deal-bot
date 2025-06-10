@@ -1,13 +1,41 @@
-"""eBay API integration for finding Buy-It-Now listings."""
+"""eBay API integration for finding Buy-It-Now listings with OAuth."""
 import os
 import time
+import base64
 from typing import Dict, List, Optional
 import requests
 from dotenv import load_dotenv
 
 load_dotenv()
 
-EBAY_APP_ID = os.getenv("EBAY_APP_ID")
+token_cache = {"access_token": None, "expires_at": 0}
+
+def get_app_token() -> str:
+    """Obtain and cache an eBay OAuth app access token."""
+    import time
+    if token_cache["access_token"] and token_cache["expires_at"] > time.time():
+        return token_cache["access_token"]
+    cid = os.environ["EBAY_CLIENT_ID"]
+    secret = os.environ["EBAY_CLIENT_SECRET"]
+    auth = base64.b64encode(f"{cid}:{secret}".encode()).decode()
+    headers = {
+        "Authorization": f"Basic {auth}",
+        "Content-Type": "application/x-www-form-urlencoded",
+    }
+    data = {
+        "grant_type": "client_credentials",
+        "scope": "https://api.ebay.com/oauth/api_scope"
+    }
+    r = requests.post(
+        "https://api.ebay.com/identity/v1/oauth2/token",
+        headers=headers, data=data, timeout=10
+    )
+    r.raise_for_status()
+    resp = r.json()
+    token_cache["access_token"] = resp["access_token"]
+    token_cache["expires_at"] = time.time() + int(resp.get("expires_in", 7200)) - 60
+    return token_cache["access_token"]
+
 EBAY_API_URL = "https://api.ebay.com/buy/browse/v1/item_summary/search"
 
 def get_top_listing(
@@ -24,15 +52,12 @@ def get_top_listing(
     Returns:
         Dict containing listing details or None if no match found
     """
-    if not EBAY_APP_ID:
-        raise ValueError("EBAY_APP_ID environment variable not set")
-
+    token = get_app_token()
     headers = {
-        "Authorization": f"Bearer {EBAY_APP_ID}",
+        "Authorization": f"Bearer {token}",
         "Content-Type": "application/json",
         "X-EBAY-C-MARKETPLACE-ID": "EBAY_US",
     }
-
     params = {
         "q": term,
         "filter": f"buyingOptions:{{FIXED_PRICE}},price:{{0..{max_price}}}",

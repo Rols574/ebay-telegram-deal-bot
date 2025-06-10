@@ -24,7 +24,8 @@ A GitHub Actions bot that finds the best Buy-It-Now deals on eBay matching your 
 3. **Set up secrets**
    - Go to your fork's Settings → Secrets and Variables → Actions
    - Add these secrets:
-     - `EBAY_APP_ID`: Your eBay API key
+     - `EBAY_CLIENT_ID`: Your eBay App client ID
+     - `EBAY_CLIENT_SECRET`: Your eBay App client secret
      - `TG_BOT_TOKEN`: Your Telegram bot token
      - `CHAT_ID`: Your Telegram chat ID
 

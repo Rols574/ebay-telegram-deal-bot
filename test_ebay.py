@@ -1,11 +1,14 @@
 """Tests for eBay API integration."""
+import os
 import pytest
-from ebay import get_top_listing
+from ebay import get_app_token
 
-def test_get_top_listing_missing_app_id():
-    """Test that get_top_listing raises error when EBAY_APP_ID is not set."""
-    with pytest.raises(ValueError, match="EBAY_APP_ID environment variable not set"):
-        get_top_listing("test", 100.0, ["broken"])
+def test_get_app_token_missing_env(monkeypatch):
+    """Test that get_app_token raises error when credentials are missing."""
+    monkeypatch.delenv("EBAY_CLIENT_ID", raising=False)
+    monkeypatch.delenv("EBAY_CLIENT_SECRET", raising=False)
+    with pytest.raises(KeyError):
+        get_app_token()
 
 def test_deep_link_format():
     """Test that deep link is formatted correctly."""
