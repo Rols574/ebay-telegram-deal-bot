@@ -22,9 +22,13 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         
+    - name: Debug env
+      run: env | sort
+        
     - name: Run deal finder
       env:
-        EBAY_APP_ID: ${{ secrets.EBAY_APP_ID }}
+        EBAY_CLIENT_ID: ${{ secrets.EBAY_CLIENT_ID }}
+        EBAY_CLIENT_SECRET: ${{ secrets.EBAY_CLIENT_SECRET }}
         TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
         CHAT_ID: ${{ secrets.CHAT_ID }}
       run: python main.py 
