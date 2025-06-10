@@ -2,7 +2,6 @@
 import tomli
 from ebay import get_top_listing
 from telegram import send_alert
-import requests
 
 def load_config() -> dict:
     """Load configuration from config.toml."""
@@ -28,15 +27,19 @@ def main():
 
         # Send alert to Telegram
         price = float(listing["price"])
-        success = send_alert(
-            title=listing["title"],
-            price=price,
-            image_url=listing["image_url"],
-            item_id=listing["id"],
-            web_url=listing["web_url"],
-        )
-
-        print(f"send_alert returned: {success}")
+        print(f"DEBUG: price before float conversion: {listing['price']}")
+        try:
+            success = send_alert(
+                title=listing["title"],
+                price=price,
+                image_url=listing["image_url"],
+                item_id=listing["id"],
+                web_url=listing["web_url"],
+            )
+            print(f"send_alert returned: {success}")
+        except Exception as e:
+            print(f"Exception in send_alert: {e}")
+            raise
 
         if not success:
             print("Failed to send Telegram alert")
