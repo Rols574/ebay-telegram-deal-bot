@@ -2,6 +2,7 @@
 import tomli
 from ebay import get_top_listing
 from telegram import send_alert
+import requests
 
 def load_config() -> dict:
     """Load configuration from config.toml."""
