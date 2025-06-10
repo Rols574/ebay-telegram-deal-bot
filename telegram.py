@@ -75,5 +75,8 @@ def send_alert(
         r.raise_for_status()
         return True
 
-    except requests.RequestException:
+    except requests.RequestException as e:
+        print(f"Telegram API error: {e}")
+        if hasattr(e, 'response') and e.response is not None:
+            print(f"Telegram API response: {e.response.text}")
         return False
